@@ -65,6 +65,7 @@ func Every(slice, iterate interface{}) bool {
 	length := sliceValue.Len()
 	wait.Add(length)
 	result := atomic.Value{}
+	result.Store(true)
 	for i := 0; i < length; i++ {
 		go func(i int) {
 			iValue := sliceValue.Index(i)
