@@ -3,7 +3,6 @@ package stream
 import (
 	"reflect"
 	"sync"
-	"sync/atomic"
 )
 
 func Each(slice, iterate interface{}) {
@@ -58,24 +57,44 @@ func Filter(slice, iterate interface{}) interface{} {
 	return result.Interface()
 }
 
-func Every(slice, iterate interface{}) bool {
+func Every(slice, iterate interface{}) (result bool) {
 	sliceValue := reflect.ValueOf(slice)
 	iterateValue := reflect.ValueOf(iterate)
 	wait := sync.WaitGroup{}
 	length := sliceValue.Len()
 	wait.Add(length)
-	result := atomic.Value{}
-	result.Store(true)
+	result = true
 	for i := 0; i < length; i++ {
 		go func(i int) {
 			iValue := sliceValue.Index(i)
 			isOk := iterateValue.Call([]reflect.Value{iValue, reflect.ValueOf(i)})[0].Bool()
 			if !isOk {
-				result.Store(false)
+				result = false
 			}
 			wait.Done()
 		}(i)
 	}
 	wait.Wait()
-	return result.Load().(bool)
+	return result
+}
+
+func Some(slice, iterate interface{}) (result bool) {
+	sliceValue := reflect.ValueOf(slice)
+	iterateValue := reflect.ValueOf(iterate)
+	wait := sync.WaitGroup{}
+	length := sliceValue.Len()
+	wait.Add(length)
+	result = false
+	for i := 0; i < length; i++ {
+		go func(i int) {
+			iValue := sliceValue.Index(i)
+			isOk := iterateValue.Call([]reflect.Value{iValue, reflect.ValueOf(i)})[0].Bool()
+			if isOk {
+				result = true
+			}
+			wait.Done()
+		}(i)
+	}
+	wait.Wait()
+	return result
 }
