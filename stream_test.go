@@ -32,8 +32,8 @@ func TestFilter(t *testing.T) {
 	result := Filter(testSlice, func(i byte, index int) bool {
 		return i%2 == 0
 	}).([]byte)
-	if bytes.Compare(result, []byte{2, 4, 6}) != 0 {
-		t.Error("Filter test failed")
+	if bytes.Contains(result, []byte{2, 4, 6}) {
+		t.Error("Filter test failed. Expected []byte{2,4,6} instead of ", result)
 	}
 }
 
